@@ -259,3 +259,87 @@ import Link from 'next/link'
 ```Bash
 npm run dev
 ```
+
+
+
+
+# កាភ្ជាប់ជាមួយ DB ជាមួយ vercel
+
+ចុះឈ្មោះប្រើប្រាស់ Cloud Database ឥតគិតថ្លៃ (Free Tier):
+
+<p>
+<li>1. <a href="https://console.neon.tech/">Neon.tech:</a>  Serverless PostgreSQL លឿន និងងាយស្រួលបំផុតជាមួយ Vercel។
+</li>
+<li>
+2. <a href="https://supabase.com/">Supabase:</a>   PostgreSQL ឥតគិតថ្លៃ មាន Dashboard មើលទិន្នន័យស្រួល។
+</li>
+<li>
+3.  <a href="https://www.prisma.io/postgres">Prisma Postgres:</a>  ប្រព័ន្ធ Postgres របស់ Prisma ផ្ទាល់។
+</li>
+</p>
+
+```bash
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+```
+
+## ការប្រើជាមួយ Neon.tech: Serverless PostgreSQL 
+
+<a href="https://console.neon.tech/">neon.tech</a>
+
+
+### 1.បង្កើត Database 
+លើ Neon.tech:ឥតគិតថ្លៃ (Free Tier) និងមិនបាច់ប្រើក្រេឌីតកាត.
+1. ចូលទៅកាន់គេហទំព័រ Neon.tech រួចចុះឈ្មោះ (Sign Up) ដោយប្រើ GitHub Account របស់អ្នក។
+2. បន្ទាប់ពី Sign in ចូលហើយ ចុច Create Project។
+3. ដាក់ឈ្មោះ Project (ឧ. pos-app-db) រួចចុច Create Project។
+4. ពេលបង្កើតរួច វានឹងបង្ហាញផ្ទាំង Connection Details។
+5. នៅត្រង់ផ្នែក Connection String ត្រូវប្រាកដថាបានជ្រើសរើស Prisma រួច Copy យក Connection String នោះទុក (វាមានរាងដូចជា 
+```bash 
+postgresql://neondb_owner:xxxxxx@ep-xyz.neon.tech/neondb?sslmode=require)។
+```
+### 2.រៀបចំ Environment Variables ក្នុង Next.js (Local):
+កំណត់ DATABASE_URL ក្នុង .env
+1. បើក Project Next.js របស់អ្នកនៅលើ VS Code។
+2. បើក File .env (ឬបង្កើតមួយប្រសិនបើតំបន់ local មិនទាន់មាន)។
+3. ជំនួស ឬបន្ថែម DATABASE_URL ដោយយក Connection String ពី Neon មកដាក់៖
+env
+```bash
+DATABASE_URL="postgresql://neondb_owner:xxxxxx@ep-xyz.neon.tech/neondb?sslmode=require"
+```
+### 3.កែប្រែ schema.prisma:
+ប្តូរ Provider ពី sqlite ទៅ postgresql.
+1. បើក File prisma/schema.prisma។
+2. ប្តូរត្រង់ provider ពី "sqlite" ទៅជា "postgresql" ដូចខាងក្រោម៖
+
+```bash
+prismadatasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+```
+### 4.Push Schema ទៅកាន់ Neon Cloud Database:
+បង្កើត Tables ក្នុង Database ថ្មី
+1. បើក Terminal ក្នុង VS Code រួចរត់ Command ខាងក្រោមដើម្បី Push Tables របស់អ្នកទៅ Neon៖
+```Bash
+npx prisma db push
+```
+បន្ទាប់មក រត់ Command នេះដើម្បី Generate Prisma Client ឡើងវិញ៖
+```Bash
+npx prisma generate
+```
+(អ្នកអាចចូលទៅមើលផ្ទាំង Dashboard លើ Neon.tech ត្រង់ផ្នែក Tables អ្នកនឹងឃើញ Tables របស់អ្នកបង្កើតឡើងនៅទីនោះ)
+### 5.កំណត់ Environment Variable លើ Vercel:
+ដើម្បីឱ្យ Vercel ស្គាល់ Cloud Database.
+1. ចូលទៅកាន់ Vercel Dashboard របស់អ្នក។
+2. ចុចលើ Project POS របស់អ្នក រួចចូលទៅ Settings -> Environment Variables។
+3. ត្រង់ Key វាយពាក្យ៖ DATABASE_URL
+4. ត្រង់ Value ផុស (Paste) Connection String របស់ Neon ចូល។
+5. ចុច Save។
+6. ជាចុងក្រោយ ចូលទៅ Deployments ចុច Redeploy លើ Build ចុងក្រោយគេ ដើម្បីឱ្យ Vercel ចាប់យក Config ថ្មីនេះ។

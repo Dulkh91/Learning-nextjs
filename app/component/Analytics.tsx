@@ -206,8 +206,8 @@ export default function Analytics() {
                   borderRadius: "8px",
                 }}
                 labelStyle={{ color: "#fff" }}
-                formatter={(value: number) => [
-                  `$${value.toFixed(2)}`,
+                formatter={(value: any) => [
+                  `$ ${Number(value || 0).toFixed(2)}`,
                   "លក់បាន",
                 ]}
                 labelFormatter={(label) =>

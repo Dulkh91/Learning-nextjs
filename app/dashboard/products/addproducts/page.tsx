@@ -7,7 +7,9 @@ export default function AddProductPage(){
     return(
         <div className=" gap-2">
             <AddProductForm onAdded={()=>location.reload()}/>
-            <Products/>
+            <div className="mx-4">
+                <Products/>
+            </div>
             
         </div>
 

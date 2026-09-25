@@ -76,7 +76,7 @@
 
 'use client'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import Analytics from '../component/Analytics'
 
 export default function Dashboard() {
   const [products, setProducts] = useState<any[]>([])
@@ -124,10 +124,7 @@ export default function Dashboard() {
        <div className=' flex justify-between'>
          <div>
             <h1 className="text-3xl font-bold mb-1">Dashboard</h1>
-            <p className="text-gray-500 mb-6">សង្ខេបការលក់ថ្ងៃ {todayStr}</p>
-         </div>
-         <div className='flex items-center'>
-            <Link href={'/pos'} className=' bg-sky-500 p-2 rounded-lg'>POS</Link>
+            {/* <p className="text-gray-500 mb-6">សង្ខេបការលក់ថ្ងៃ {todayStr}</p> */}
          </div>
        </div>
 
@@ -155,6 +152,9 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ថ្ងៃនេះលក់បានអ្វី */}
           <div className="lg:col-span-2 bg-stone-700 text-gray-100 rounded-2xl border shadow-sm">
+            <Analytics/>
+
+{/*             
             <div className="p-5 border-b flex justify-between">
               <h2 className="font-bold">ថ្ងៃនេះលក់បានអ្វីខ្លះ</h2>
               <span className="text-xs bg-gray-400 px-3 py-1 rounded-full">{topProducts.length} មុខ</span>
@@ -184,7 +184,7 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
-            )}
+            )} */}
           </div>
 
           {/* ផលិតផលទាំងអស់ + ស្តុក */}

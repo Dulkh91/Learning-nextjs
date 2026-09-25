@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import CheckOutBtn from '../component/CheckOutBtn'
 import Receipt from '../component/Receipt'
 import Link from 'next/link'
+import Image from 'next/image'
 
 
 type Product = { id: string; name: string; price: number; category: string; image?: string }
@@ -92,8 +93,10 @@ const checkout = async () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map(p => (
             <button key={p.id} onClick={() => addToCart(p)}
-            className="bg-white p-3 rounded-xl shadow-sm hover:shadow-md text-left border overflow-hidden">
-              {p.image && <img src={p.image} className="w-full h-24 object-cover rounded-lg mb-2" />}
+            className="bg-white p-2 rounded-xl shadow-sm hover:shadow-md text-left border overflow-hidden">
+              <div className=' flex justify-center'>
+                {p.image && <img src={p.image} className="w-fit h-46 object-cover rounded-lg mb-2" />}
+              </div>
               <div className="font-medium text-stone-900">{p.name}</div>
               <div className="text-sm text-gray-500">{p.category}</div>
               <div className="mt-2 font-bold text-gray-500">${p.price.toFixed(2)}</div>
@@ -105,7 +108,7 @@ const checkout = async () => {
       
 
       {/* RIGHT - Cart with YOUR style */}
-      <div className="w- bg-stone-900 border-l p-2 flex flex-col">
+      <div className=" w-72 bg-stone-900 border-l p-2 flex flex-col">
         <h2 className="text-xl font-bold mb-4">Cart ({cart.length})</h2>
 
         <div className="flex-1 space-y-1 overflow-auto">
@@ -113,8 +116,8 @@ const checkout = async () => {
 
           {cart.map(item => (
             <div key={item.id} className='flex justify-between border-b py-2'>
-              <div className='flex'>
-                {item.image && <img src={item.image}  className=' w-12'/>}
+              <div className='flex gap-2'>
+                {item.image && <img src={item.image}  className=' w-20'/>}
                 <h1 className='font-medium'>{item.name}</h1>
 
               </div>

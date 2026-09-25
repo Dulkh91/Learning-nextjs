@@ -68,3 +68,72 @@ export async function POST(req: Request) {
   })
   return NextResponse.json(product)
 }
+
+
+
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json()
+    const { id, name, price, category, stock, image } = body
+
+    console.log(price)
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Product ID is required" },
+        { status: 400 }
+      )
+    }
+
+    // 1. ស្វែងរក Product ចាស់ដើម្បីមើលថាមាន imageId ឬនៅ
+    const existingProduct = await prisma.product.findUnique({
+      where: { id: Number(id) },
+    })
+
+    if (!existingProduct) {
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: 404 }
+      )
+    }
+
+    let imageId = existingProduct.imageId
+
+    // 2. ប្រសិនបើមានផ្ញើរូបភាពថ្មី (Base64 string) មក
+    if (image) {
+      if (imageId) {
+        // បើមានរូបចាស់ ធ្វើការ Update រូបភាពចាស់នោះ
+        await prisma.productImage.update({
+          where: { id: imageId },
+          data: { data: image },
+        })
+      } else {
+        // បើគ្មានរូបពីមុនទេ ធ្វើការ Create រូបភាពថ្មី
+        const newImg = await prisma.productImage.create({
+          data: { data: image },
+        })
+        imageId = newImg.id
+      }
+    }
+
+    // 3. Update ទិន្នន័យ Product
+    const updatedProduct = await prisma.product.update({
+      where: { id: Number(id) },
+      data: {
+        name: name ?? existingProduct.name,
+        price: price ? parseFloat(price) : existingProduct.price,
+        category: category ?? existingProduct.category,
+        stock: stock ? parseInt(stock) : existingProduct.stock,
+        imageId: imageId,
+      },
+      include: { image: true },
+    })
+
+    return NextResponse.json(updatedProduct)
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to update product" },
+      { status: 500 }
+    )
+  }
+}

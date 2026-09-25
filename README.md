@@ -343,3 +343,155 @@ npx prisma generate
 4. ត្រង់ Value ផុស (Paste) Connection String របស់ Neon ចូល។
 5. ចុច Save។
 6. ជាចុងក្រោយ ចូលទៅ Deployments ចុច Redeploy លើ Build ចុងក្រោយគេ ដើម្បីឱ្យ Vercel ចាប់យក Config ថ្មីនេះ។
+
+
+
+
+
+## api analytics:
+```js
+// /app/api/analytics/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+type Period = "today" | "week" | "month" | "custom";
+type LabelFormat = "hour" | "dayNumber" | "shortDate";
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const period = searchParams.get("period") as Period | null;
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
+
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date;
+    let labelFormat: LabelFormat;
+
+    // TODAY - Group by HOUR
+    if (period === "today") {
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+      labelFormat = "hour";
+    }
+    // THIS WEEK
+    else if (period === "week") {
+      const day = now.getDay();
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day, 0, 0, 0);
+      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (7 - day), 0, 0, 0);
+      labelFormat = "shortDate";
+    }
+    // THIS MONTH
+    else if (period === "month") {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      labelFormat = "dayNumber";
+    }
+    // CUSTOM
+    else if (period === "custom" && from && to) {
+      startDate = new Date(`${from}T00:00:00`);
+      endDate = new Date(`${to}T00:00:00`);
+      endDate.setDate(endDate.getDate() + 1);
+
+      const diffDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      labelFormat = diffDays <= 1 ? "hour" : diffDays <= 31 ? "dayNumber" : "shortDate";
+    }
+    // DEFAULT
+    else {
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+      labelFormat = "hour";
+    }
+
+    // GET SALES
+    const sales = await prisma.sale.findMany({
+      where: {
+        createdAt: { gte: startDate, lt: endDate },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    // CALCULATE
+    const totalSales = sales.reduce((sum, sale) => sum + sale.total, 0);
+    const totalOrders = sales.length;
+    const averageOrder = totalOrders > 0 ? totalSales / totalOrders : 0;
+
+    // GROUP DATA
+    const dataMap = new Map<string, number>();
+
+    for (const sale of sales) {
+      const date = sale.createdAt;
+      let key: string;
+
+      switch (labelFormat) {
+        case "hour":
+          key = `${String(date.getHours()).padStart(2, "0")}:00`;
+          break;
+        case "dayNumber":
+          key = String(date.getDate());
+          break;
+        case "shortDate":
+          key = `${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+          break;
+        default:
+          key = String(date.getDate());
+      }
+
+      dataMap.set(key, (dataMap.get(key) || 0) + sale.total);
+    }
+
+    // BUILD CHART DATA
+    const chartData: { label: string; total: number }[] = [];
+
+    if (labelFormat === "hour") {
+      // ✅ បង្ហាញតែម៉ោងដែលមានលក់ (ឬម៉ោង 06:00 - ម៉ោងបច្ចុប្បន្ន)
+      const currentHour = now.getHours();
+      
+      // Option 1: បង្ហាញតែម៉ោងដែលមានលក់
+      const hoursWithSales = Array.from(dataMap.keys()).sort();
+      
+      if (hoursWithSales.length === 0) {
+        // បើអត់មានលក់ទាល់តែសិន → បង្ហាញម៉ោងបច្ចុប្បន្ន
+        chartData.push({ 
+          label: `${String(currentHour).padStart(2, "0")}:00`, 
+          total: 0 
+        });
+      } else {
+        for (const hour of hoursWithSales) {
+          chartData.push({ label: hour, total: dataMap.get(hour) || 0 });
+        }
+      }
+    } else if (labelFormat === "dayNumber") {
+      // បង្ហាញថ្ងៃទី 1-31 (ឬតែថ្ងៃដែលមានលក់)
+      const daysInMonth = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate();
+      for (let i = 1; i <= daysInMonth; i++) {
+        const day = String(i);
+        chartData.push({ label: day, total: dataMap.get(day) || 0 });
+      }
+    } else {
+      // shortDate
+      const current = new Date(startDate);
+      while (current < endDate) {
+        const key = `${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`;
+        chartData.push({ label: key, total: dataMap.get(key) || 0 });
+        current.setDate(current.getDate() + 1);
+      }
+    }
+
+    return NextResponse.json({
+      period,
+      labelFormat,
+      totalSales,
+      totalOrders,
+      averageOrder: Math.round(averageOrder * 100) / 100,
+      chartData,
+    });
+  } catch (error) {
+    console.error("Analytics error:", error);
+    return NextResponse.json({ message: "Failed to get analytics" }, { status: 500 });
+  }
+}
+```

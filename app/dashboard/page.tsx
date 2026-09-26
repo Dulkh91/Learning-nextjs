@@ -77,6 +77,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Analytics from '../component/Analytics'
+import TopProducts from '../component/TopProducts'
+import { Trophy } from 'lucide-react'
 
 export default function Dashboard() {
   const [products, setProducts] = useState<any[]>([])
@@ -149,7 +151,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className=" grid grid-cols-1 lg:grid-cols-3 gap-2">
           {/* ថ្ងៃនេះលក់បានអ្វី */}
           <div className="lg:col-span-2 bg-stone-700 text-gray-100 rounded-2xl border shadow-sm">
             <Analytics/>
@@ -187,22 +189,20 @@ export default function Dashboard() {
             )} */}
           </div>
 
-          {/* ផលិតផលទាំងអស់ + ស្តុក */}
+          {/* top products */}
           <div className="bg-stone-800 text-gray-100 rounded-2xl border shadow-sm">
-            <div className="p-5 border-b font-bold">ផលិតផលទាំងអស់</div>
+            <div className="p-5 border-b font-bold">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-yellow-500" />
+                   Top 5 ផលិតផលលក់ដាច់
+                </h2>
+                <p className="text-sm text-gray-500">
+                  ផលិតផលដែលលក់បានច្រើនបំផុត
+                </p>
+        </div>
             <div className="p-3 space-y-3 max-h- overflow-auto">
-              {products.map((p:any) => (
-                <div key={p.id} className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden">
-                    {p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs">☕</div>}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{p.name}</p>
-                    <p className="text-xs text-gray-500">{p.category}</p>
-                  </div>
-                  <p className="text-sm font-bold">${p.price}</p>
-                </div>
-              ))}
+              
+                <TopProducts/>
             </div>
           </div>
         </div>

@@ -187,8 +187,8 @@ export default function Analytics() {
 
         <div className="h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={analytics.chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <LineChart data={analytics.chartData} margin={{right: 20, top: 15, left: -25}}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" className=" m-0"/>
               
               {/* ✅ កែ dataKey ពី "date" ទៅ "label" */}
               <XAxis

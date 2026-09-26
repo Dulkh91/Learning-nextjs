@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import CheckOutBtn from '../component/CheckOutBtn'
 import Receipt from '../component/Receipt'
 import Link from 'next/link'
-import Image from 'next/image'
 
 
 type Product = { id: string; name: string; price: number; category: string; image?: string }

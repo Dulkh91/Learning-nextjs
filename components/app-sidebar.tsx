@@ -13,7 +13,8 @@ import {
   LayoutDashboard,
   SquarePen,
   ShoppingCart,
-  SquareText
+  SquareText,
+  ChartLine
 } from "lucide-react"
 import Link from "next/link"
 
@@ -23,7 +24,7 @@ import { usePathname } from "next/navigation"
 const menus = [
   {title: "Dashboard",
     url: "/dashboard",
-    icon: LayoutDashboard
+    icon: ChartLine
   },
   {title: "Products",
     url: "/dashboard/products",
@@ -31,11 +32,15 @@ const menus = [
   },
   {title: "Sales",
     url: "/dashboard/sales",
+    icon: ShoppingCart
+  },
+  {title: "Invoices",
+    url: "/dashboard/invoices",
     icon: SquareText
   },
   {title: "POS",
     url: "/pos",
-    icon: ShoppingCart
+    icon: LayoutDashboard
   }
 ]
 

@@ -7,18 +7,22 @@ qty: number
 type Props = {
   cart: CartItem[]
   total: number
+  invoiceNo: string
   onClose: () => void
 }
 
-export default function Receipt({ cart, total, onClose }: Props) {
+export default function Receipt({ cart, total,invoiceNo, onClose }: Props) {
   const date = new Date().toLocaleString('km-KH')
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       {/* នេះជាផ្នែក Print */}
-      <div id="receipt" className="bg-mauve-900 w- p-6 rounded-xl">
+      <div id="receipt" className="bg-mauve-900 w-lg p-6 rounded-xl text-white">
         <div className="text-center mb-4">
-          <h1 className="text-2xl font-bold">☕ COFFEE POS</h1>
+          <h1 className="text-2xl font-bold">☕ Coffee Dul Shop</h1>
+          <p className="text-sm">
+            Invoice: <span className="font-semibold">{invoiceNo}</span>
+          </p>
           <p className="text-sm text-gray-500">{date}</p>
         </div>
 
@@ -57,3 +61,4 @@ export default function Receipt({ cart, total, onClose }: Props) {
     </div>
   )
 }
+

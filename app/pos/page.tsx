@@ -15,7 +15,11 @@ export default function POS() {
   const [category, setCategory] = useState('All')
 
   const [showReceipt, setShowReceipt] = useState(false)
-  const [lastSale, setLastSale] = useState<{cart: CartItem[], total: number} | null>(null)
+  const [lastSale, setLastSale] = useState<{
+                cart: CartItem[], 
+                total: number, 
+                invoiceNo: string 
+              } | null>(null)
 
   useEffect(() => {
     fetch('/api/products').then(r => r.json()).then(setProducts)
@@ -49,7 +53,7 @@ export default function POS() {
 const checkout = async () => {
   if (cart.length === 0) return
 
-  // 👇 ដាក់ត្រង់នេះ! កាត់រូបចេញ
+
   const saleData = cart.map(i => ({ 
     id: i.id, 
     name: i.name, 
@@ -57,7 +61,7 @@ const checkout = async () => {
     qty: i.qty 
   }))
 
-  await fetch('/api/sales', {
+ const res = await fetch('/api/sales', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 
@@ -66,7 +70,14 @@ const checkout = async () => {
     })
   })
 
-  setLastSale({ cart: [...cart], total })
+  const data = await res.json()
+
+  setLastSale({ 
+    cart: [...cart], 
+    total,
+    invoiceNo: data.invoice.invoiceNo
+  })
+
   setShowReceipt(true)
   setCart([])
 }
@@ -147,6 +158,7 @@ const checkout = async () => {
             <Receipt
                 cart={lastSale.cart}
                 total={lastSale.total}
+                invoiceNo={lastSale.invoiceNo}
                 onClose={() => setShowReceipt(false)}
             />
             )}          

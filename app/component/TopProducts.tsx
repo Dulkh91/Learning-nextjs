@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trophy, TrendingUp, Package, DollarSign } from "lucide-react"; 
 
 type TopProduct = {
   rank: number;

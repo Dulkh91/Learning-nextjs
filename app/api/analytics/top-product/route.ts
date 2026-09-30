@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
       endDate = new Date( now.getFullYear(), now.getMonth() + 1, 1);
     } else if (period === "year"){
       startDate = new Date(now.getFullYear(), 0, 1);
+      endDate = new Date( now.getFullYear()+ 1, 1);
     }
 
     // =========================

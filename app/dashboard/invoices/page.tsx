@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -16,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { Search, Eye } from "lucide-react";
 import Receipt from "../../component/Receipt";
+import Pagination from "../../component/Pagination";
 
 type Invoice = {
   id: string;
@@ -204,6 +204,15 @@ export default function InvoicesPage() {
           </TableBody>
         </Table>
       </div>
+      {data && !loading && !errorMessage && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={data.totalPages}
+          totalCount={data.totalCount}
+          pageSize={limit}
+          onPageChange={setCurrentPage}
+        />
+      )}
       {viewInvoice && (
         <Receipt
           cart={parseItems(viewInvoice.sale.items)}

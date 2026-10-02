@@ -31,19 +31,29 @@
 
 
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
+
+// import { PrismaClient } from '@prisma/client'
+// const prisma = new PrismaClient()
+
 
 export async function GET() {
-  const products = await prisma.product.findMany({
-    include: { image: true } // ទាញរូបមកជាមួយ
-  })
-  // ប្តូរអោយ frontend ងាយប្រើ
-  const result = products.map(p => ({
-   ...p,
-    image: p.image?.data || null
-  }))
-  return NextResponse.json(result)
+  try {
+      const products = await prisma.product.findMany({
+      include: { image: true } // ទាញរូបមកជាមួយ
+    })
+    // ប្តូរអោយ frontend ងាយប្រើ
+    const result = products.map(p => ({
+    ...p,
+      image: p.image?.data || null
+    }))
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error("Failed to fetch product: ", error)
+    return NextResponse.json(
+      { error: 'Failed to fetch products' }, 
+      { status: 500 })
+  }
 }
 
 export async function POST(req: Request) {

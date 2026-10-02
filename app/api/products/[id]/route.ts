@@ -128,9 +128,10 @@ export async function DELETE(_req: Request, context: RouteContext) {
 
 
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+// import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 type RouteContext = {
   params: Promise<{ id: string }>;

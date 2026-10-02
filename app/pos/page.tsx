@@ -13,8 +13,13 @@ export default function POS() {
   const [products, setProducts] = useState<Product[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
   const [category, setCategory] = useState('All')
+  const [error, setError] = useState<string | null>(null)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
   const [showReceipt, setShowReceipt] = useState(false)
+  const [checkingOut, setCheckingOut] = useState(false)
+
   const [lastSale, setLastSale] = useState<{
                 cart: CartItem[], 
                 total: number, 
@@ -22,7 +27,14 @@ export default function POS() {
               } | null>(null)
 
   useEffect(() => {
-    fetch('/api/products').then(r => r.json()).then(setProducts)
+    fetch('/api/products')
+    .then((r)=>{
+      if(!r.ok) throw new Error('Failed to fetch')
+      return r.json()
+    })
+    .then(setProducts)
+    .catch((e)=>setError(e.message))
+    .finally(()=> setLoading(false))
   }, [])
 
   const categories = ['All',...new Set(products.map(p => p.category))]
@@ -51,43 +63,59 @@ export default function POS() {
 
   // រក function នេះក្នុង file របស់អ្នក
 const checkout = async () => {
-  if (cart.length === 0) return
+  if (cart.length === 0 || checkingOut) return
+  setCheckingOut(true)
 
-
-  const saleData = cart.map(i => ({ 
-    id: i.id, 
-    name: i.name, 
-    price: i.price, 
-    qty: i.qty 
-  }))
-
- const res = await fetch('/api/sales', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      cart: saleData, // 👈 ត្រូវប្រើ saleData មិនមែន cart
-      total 
+  // const saleData = cart.map(i => ({ 
+  //   id: i.id, 
+  //   name: i.name, 
+  //   price: i.price, 
+  //   qty: i.qty 
+  // }))
+  try {
+    const res = await fetch('/api/sales', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        cart: cart.map(({id,name,price,qty})=> ({id,name,price,qty})),
+        total 
+      })
     })
-  })
 
-  const data = await res.json()
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || `Checkout failed (${res.status})`)
+      }
+    const data = await res.json()
+    const invoiceNo = data?.invoice?.invoiceNo
+    if (typeof invoiceNo !== 'string') {
+      throw new Error('Sale was saved, but the server did not return an invoice number.')
+    }
 
-  setLastSale({ 
-    cart: [...cart], 
-    total,
-    invoiceNo: data.invoice.invoiceNo
-  })
+    setCheckoutError(null)
+    setLastSale({ cart: [...cart], total, invoiceNo })
+    setShowReceipt(true)
+    setCart([])
 
-  setShowReceipt(true)
-  setCart([])
+  } catch (error) {
+    console.error('Checkout failed: ', error)
+    setCheckoutError(error instanceof Error ? error.message : 'Checkout failed. Please try again.')
+  }finally{
+    setCheckingOut(false)
+  }
+ 
 }
 
+
+if (loading) return <div className="min-h-screen bg-gray-800 text-gray-100 p-6">Loading...</div>
+if (error) return <div className="min-h-screen bg-gray-800 text-red-400 p-6">Error: {error}</div>
 
   return (
     <div className="min-h-screen bg-gray-800 flex text-gray-100">
       {/* LEFT - Products */}
+      
       <div className="flex-1 p-6">
-        <div className='flex justify-between items-center mb-4"'>
+        <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold mb-4">☕ COFFEE POS</h1>
             <Link href="/dashboard" className="bg-emerald-700 border px-3 py-1 rounded-full text-sm">Dashboard</Link>
         </div>
@@ -146,6 +174,11 @@ const checkout = async () => {
         </div>
 
 
+          {checkoutError && (
+            <p role="alert" className="mb-2 text-sm text-red-400">
+              {checkoutError}
+            </p>
+          )}
           <CheckOutBtn
             total={total}
             itemCount={cart.length}

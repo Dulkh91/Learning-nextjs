@@ -32,9 +32,11 @@ export async function GET() {
 {/*==== V2 ====*/}
 
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+// import { PrismaClient } from "@prisma/client";
+
+// const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
   try {

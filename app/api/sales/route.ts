@@ -46,9 +46,7 @@ export async function POST(req: Request) {
 
 {/*===== V3 =======*/}
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   const sales = await prisma.sale.findMany({
@@ -63,7 +61,27 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { cart, total } = await req.json()
+    const body = await req.json()
+    const cart = body?.cart
+    const total = body?.total
+
+    if (
+      !Array.isArray(cart) ||
+      cart.length === 0 ||
+      !cart.every(
+        (item) =>
+          item &&
+          typeof item.id === 'string' &&
+          typeof item.name === 'string' &&
+          Number.isFinite(item.price) &&
+          Number.isInteger(item.qty) &&
+          item.qty > 0,
+      ) ||
+      !Number.isFinite(total) ||
+      total <= 0
+    ) {
+      return NextResponse.json({ error: 'Invalid sale data' }, { status: 400 })
+    }
 
     const result = await prisma.$transaction(async (tx) => {
 

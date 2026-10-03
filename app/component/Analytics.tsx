@@ -65,6 +65,7 @@ export default function Analytics() {
 
   // ✅ កំណត់ interval សម្រាប់ XAxis
   const xAxisInterval = analytics.groupBy === "hour" ? 2 : 0;
+  console.log("xax",xAxisInterval)
 
   return (
     <div className="space-y-6">

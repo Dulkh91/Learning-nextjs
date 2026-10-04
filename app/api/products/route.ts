@@ -27,15 +27,9 @@
 // }
 
 
+{/*== V2 method GET*/}
 
-
-
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-
-// import { PrismaClient } from '@prisma/client'
-// const prisma = new PrismaClient()
-
+{/*
 
 export async function GET() {
   try {
@@ -55,6 +49,49 @@ export async function GET() {
       { status: 500 })
   }
 }
+
+*/}
+
+
+
+
+{/*== V3 method GET*/}
+
+
+import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+
+export async function GET() {
+  try {
+    const products = await prisma.product.findMany({
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        category: true,
+        stock: true,
+        imageId: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    })
+
+    return NextResponse.json(products)
+  } catch (error) {
+    console.error("Failed to fetch product:", error)
+
+    return NextResponse.json(
+      { error: "Failed to fetch products" },
+      { status: 500 }
+    )
+  }
+}
+
+
+
+
 
 export async function POST(req: Request) {
   const body = await req.json()

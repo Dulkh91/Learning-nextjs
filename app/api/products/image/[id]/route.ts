@@ -8,26 +8,23 @@ export async function GET(
 {
     try {
         const {id} = await params;
-        const product = await prisma.product.findUnique({
+        
+        const image = await prisma.productImage.findUnique({
             where: {
                 id
             },
-            select: {
-                image: {
-                    select: {
-                        data: true
-                    }
-                }
+            select:{
+                data: true
             }
         })
 
-        if(!product?.image){
+        if(!image){
             return new NextResponse("Image not found!",{
                 status: 404
             });
         }
-        const imageData = product.image.data;
-        const match = imageData.match(/^data:(.+);base64,(.+)$/);
+       
+        const match = image.data.match(/^data:(.+);base64,(.+)$/);
 
         if(!match){
             return new NextResponse("Invalid image data",{

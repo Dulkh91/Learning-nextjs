@@ -139,19 +139,26 @@ export async function GET(request: NextRequest) {
           in: Array.from(productMap.keys()),
         },
       },
-      select: {
+      select:{
         id: true,
         name: true,
         category: true,
         price: true,
+        imageId: true
+      }
+      // select: {
+      //   id: true,
+      //   name: true,
+      //   category: true,
+      //   price: true,
 
-        image:{
-            select: {
-                id: true,
-                data: true
-            }
-        }
-      },
+      //   image:{
+      //       select: {
+      //           id: true,
+      //           data: true
+      //       }
+      //   }
+      // },
     });
 
     // =========================
@@ -167,7 +174,8 @@ export async function GET(request: NextRequest) {
           name: product.name,
           category: product.category,
           price: product.price,
-          image: product.image?.data?? null,
+          imageId: product.imageId?? null,
+          // image: product.image?.data?? null,
           quantity: data?.quantity ?? 0,
           revenue: data?.revenue ?? 0,
         };

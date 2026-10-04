@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 type TopProduct = {
   rank: number;
   id: string;
   name: string;
-  image: string | null;
+  imageId: string | null;
   quantity: number;
   revenue: number;
   orders: number;
@@ -40,7 +41,8 @@ export default function TopProducts() {
   const [data, setData] = useState<TopProductsData | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+
+  useEffect(()=>{
     async function fetchTopProducts() {
       setLoading(true);
       try {
@@ -48,7 +50,6 @@ export default function TopProducts() {
           `/api/analytics/top-product?period=${period}&sortBy=${sortBy}&limit=5`
         );
         const result = await res.json();
-        console.log(result)
         setData(result);
       } catch (error) {
         console.error("Failed to fetch top products:", error);
@@ -128,6 +129,7 @@ export default function TopProducts() {
                 product.rank <= 3 ? "bg-stone-800/30" : "bg-stone-900"
               }`}
             >
+              
                 
               {/* Rank Badge */}
               {/* <div
@@ -141,12 +143,9 @@ export default function TopProducts() {
               {/* Product Image */}
               <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-gray-700">
                 
-                {product.image ? (
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-full w-full object-cover"
-                  />
+                {product.imageId ? (
+                  <Image src={`/api/products/image/${product.imageId}`} width={100} height={100} alt={product.name}/>
+                  
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-2xl">
                     ☕

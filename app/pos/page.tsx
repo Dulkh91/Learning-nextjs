@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 
-type Product = { id: string; name: string; price: number; category: string; imageId?:string }
+type Product = { id: string; name: string; price: number; category: string; imageId?:string; stock:number }
 type CartItem = Product & { qty: number }
 
 
@@ -101,6 +101,7 @@ const checkout = async () => {
  
 }
 
+console.log(products)
 
 if (loading) return <div className="min-h-screen bg-gray-800 text-gray-100 p-6">Loading...</div>
 if (error) return <div className="min-h-screen bg-gray-800 text-red-400 p-6">Error: {error}</div>
@@ -129,11 +130,14 @@ if (error) return <div className="min-h-screen bg-gray-800 text-red-400 p-6">Err
             className="bg-white p-2 rounded-xl shadow-sm hover:shadow-md text-left border overflow-hidden">
               <div className=' flex justify-center'>
                 {/* {p.imageId && <img src={`/api/products/image/${p.imageId}`} className="w-fit h-44 object-cover rounded-lg mb-2" />} */}
-              {p.imageId && <Image src={`/api/products/image/${p.imageId}`} className=' w-fit h-44' width={100} height={100} alt={p.name}/>}
+              {p.imageId && <Image src={`/api/products/image/${p.imageId}`} className=' w-fit h-44' width={100} height={100} alt={p.name} loading='lazy'/>}
               </div>
               <div className="font-medium text-stone-900">{p.name}</div>
               <div className="text-sm text-gray-500">{p.category}</div>
-              <div className="mt-2 font-bold text-gray-500">${p.price.toFixed(2)}</div>
+              <div className="mt-2 font-bold text-gray-500 flex justify-between">
+                <p>${p.price.toFixed(2)}</p>
+                <p>{p.stock}</p>
+              </div>
             </button>
           ))}
         </div>

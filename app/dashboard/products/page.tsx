@@ -88,4 +88,3 @@ export default function Products(){
     )
 }
 
-{/* <img src={`/api/products/image/${product.imageId}`} className=" w- h-20 object-cover flex justify-center items-center rounded-md" />  */}

@@ -83,10 +83,25 @@ import { Trophy } from 'lucide-react'
 export default function Dashboard() {
   const [products, setProducts] = useState<any[]>([])
   const [sales, setSales] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/products').then(r => r.json()).then(setProducts)
-    fetch('/api/sales').then(r => r.json()).then(setSales)
+
+    fetch('/api/products')
+    .then((r) => {
+      if(!r.ok) throw new Error("Failed to fetch product!")
+      return r.json()
+    })
+    .then(setProducts)
+    .finally(()=>setLoading(false))
+    
+
+
+    fetch('/api/sales')
+    .then((r) => {
+      if(!r.ok) throw new Error("Failed to fetch sale!")
+      r.json()})
+    .then(()=>setSales)
   }, [])
 
   // --- គណនា ---
@@ -119,6 +134,12 @@ export default function Dashboard() {
   const topProducts = Object.values(soldMap).sort((a:any,b:any)=>b.qty - a.qty)
   const todayRevenue = todaySales.reduce((sum, s:any) => sum + s.total, 0)
   const totalProducts = products.length
+
+  if(loading) return (
+    <div className="flex h-64 items-center justify-center">
+          <div className="animate-spin h-8 w-8 border-2 border-cyan-500 border-t-transparent rounded-full" />
+      </div>
+  )
 
   return (
     <div className="min-h-screen p-6">

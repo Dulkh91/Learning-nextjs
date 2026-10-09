@@ -38,6 +38,10 @@ const menus = [
     url: "/dashboard/invoices",
     icon: SquareText
   },
+  {title: "Stock",
+    url: "/dashboard/stock",
+    icon: SquarePen
+  },
   {title: "POS",
     url: "/pos",
     icon: LayoutDashboard

@@ -345,6 +345,206 @@ npx prisma generate
 6. ជាចុងក្រោយ ចូលទៅ Deployments ចុច Redeploy លើ Build ចុងក្រោយគេ ដើម្បីឱ្យ Vercel ចាប់យក Config ថ្មីនេះ។
 
 
+# prisma migrate dev ជាអ្វី?
+
+ពេលអ្នកកែ schema.prisma ឧទាហរណ៍ដើមមាន៖
+```bash
+model Sale {
+  id        String   @id @default(cuid())
+  total     Float
+  items     String
+  createdAt DateTime @default(now())
+}
+```
+ហើយអ្នកចង់បន្ថែម Invoice៖
+```bash
+model Invoice {
+  id        String   @id @default(uuid())
+  invoiceNo String   @unique
+  saleId    String   @unique
+  sale      Sale     @relation(fields: [saleId], references: [id])
+  createdAt DateTime @default(now())
+}
+```
+អ្នកបាន កែផែនទី Database។
+
+ប៉ុន្តែ Database ពិតប្រាកដ (dev.db) មិនទាន់មានតារាង Invoice ទេ។
+
+ដូច្នេះយើងប្រើ៖
+```bash
+npx prisma migrate dev
+```
+
+ដើម្បីប្រាប់ Prisma៖
+
+"យកការផ្លាស់ប្តូរពី schema.prisma ទៅកែ Database ឱ្យដូច schema។"
+
+2. ចុះ --name ជាអ្វី?
+
+ឧទាហរណ៍៖
+```bash
+npx prisma migrate dev --name add_invoice_counter
+```
+add_invoice_counter គ្រាន់តែជា ឈ្មោះដែលយើងដាក់ឱ្យ migration នោះ។
+
+វាមិនមែនជា command ផ្សេងទេ។
+
+ឧទាហរណ៍៖
+```bash
+--name add_invoice_counter
+```
+
+មានន័យថា៖
+
+Migration នេះខ្ញុំដាក់ឈ្មោះថា add_invoice_counter ព្រោះខ្ញុំកំពុងបន្ថែម Invoice Counter។
+
+Prisma នឹងបង្កើត folder ប្រហែលជា៖
+```bash
+prisma/
+└── migrations/
+    └── 20260927080000_add_invoice_counter/
+        └── migration.sql
+```
+3. ហេតុអ្វីខ្ញុំបាននិយាយពី command ពីរ?
+
+ព្រោះខ្ញុំកំពុងពន្យល់ពី ការផ្លាស់ប្តូរ 2 ដំណាក់កាល ដែលយើងបានធ្វើក្នុង schema។
+
+ដំណាក់កាលទី 1
+
+យើងបន្ថែម៖
+```bash
+model InvoiceCounter {
+  date    String @id
+  current Int    @default(0)
+}
+```
+ដូច្នេះអាច run៖
+```bash
+npx prisma migrate dev --name add_invoice_counter
+```
+មានន័យថា៖
+
+បង្កើត migration ដើម្បីបន្ថែម InvoiceCounter table។
+
+ដំណាក់កាលទី 2
+
+បន្ទាប់មកយើងបន្ថែម relation៖
+```bash
+model Sale {
+  ...
+  invoice Invoice?
+}
+```
+និង៖
+```bash
+model Invoice {
+  ...
+  sale Sale @relation(fields: [saleId], references: [id])
+}
+```
+បើអ្នក បាន migrate ដំណាក់កាលទី 1 រួចហើយ ហើយទើបបន្ថែម relation នេះ អាច run៖
+```bash
+npx prisma migrate dev --name add_invoice_relation
+```
+វាមានន័យថា៖
+
+បង្កើត migration ថ្មី ដើម្បីបន្ថែម/កែ relation រវាង Sale និង Invoice។
+
+4. ប៉ុន្តែសម្រាប់អ្នកឥឡូវនេះ មានចំណុចសំខាន់
+
+អ្នកមិនចាំបាច់ run command ទាំងពីរទេ។
+
+បើអ្នកកំពុងរៀន ហើយយើងកំពុងរៀបចំ Schema ម្តងនេះ ឱ្យសរសេរ Schema ចុងក្រោយឱ្យបានត្រឹមត្រូវសិន។
+
+ឧទាហរណ៍៖
+```bash
+model Sale {
+  id        String   @id @default(cuid())
+  total     Float
+  items     String
+  createdAt DateTime @default(now())
+
+  invoice   Invoice?
+}
+
+model Invoice {
+  id        String   @id @default(uuid())
+  invoiceNo String   @unique
+  saleId    String   @unique
+  sale      Sale     @relation(fields: [saleId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model InvoiceCounter {
+  date    String @id
+  current Int    @default(0)
+}
+```
+បើនេះជា ការកែ Schema ទាំងអស់ដែលអ្នកចង់បាន ហើយមិនទាន់បាន migrate ទេ អ្នកអាច runតែម្តង៖
+```bash
+npx prisma migrate dev --name add_invoice_system
+```
+ខ្ញុំចូលចិត្តឱ្យអ្នកប្រើឈ្មោះនេះជាង ព្រោះយើងកំពុងបន្ថែមប្រព័ន្ធ Invoice ទាំងមូល៖
+
+add_invoice_system
+5. តើ migrate ខុសពី generate យ៉ាងដូចម្តេច?
+
+នេះសំខាន់ណាស់៖
+
+migrate
+```bash
+npx prisma migrate dev --name add_invoice_system
+```
+👉 កែ Database
+```bash
+schema.prisma
+      ↓
+   migrate
+      ↓
+dev.db
+```
+generate
+npx prisma generate
+
+👉 កែ/បង្កើត Prisma Client ដែល Code របស់អ្នកប្រើ។
+
+schema.prisma
+      ↓
+   generate
+      ↓
+Prisma Client
+      ↓
+prisma.invoice
+prisma.invoiceCounter
+6. ដូច្នេះនៅ Project របស់អ្នក
+
+បន្ទាប់ពីយើងកែ schema.prisma រួច ខ្ញុំណែនាំឱ្យធ្វើ៖
+```bash
+npx prisma migrate dev --name add_invoice_system
+```
+
+ជាទូទៅ migration នេះនឹង update database ហើយ regenerate Prisma Client ផងដែរ។
+
+បើ TypeScript នៅតែមាន error:
+```bash
+npx prisma generate
+```
+
+បន្ទាប់មក restart:
+
+npm run dev
+សរុបខ្លី
+```bash
+schema.prisma
+     │
+     ├── migrate ──→ កែ Database
+     │
+     └── generate ─→ កែ Prisma Client
+```
+
+ហើយ --name add_invoice_system គ្រាន់តែជា ឈ្មោះសម្រាប់កត់ត្រាការផ្លាស់ប្តូរ ប៉ុណ្ណោះ។
+
+
 
 
 
@@ -495,3 +695,85 @@ export async function GET(request: NextRequest) {
   }
 }
 ```
+
+
+## Stock History
+
+ជំហានទី 1៖ បង្កើត StockMovement model
+
+ឥឡូវយើងមិនទាន់ធ្វើ UI ទេ។ យើងចាប់ផ្ដើមពី Database ជាមុនសិន។
+
+បើក prisma/schema.prisma ហើយបន្ថែម Model ខាងក្រោមនៅខាងក្រោមគេ៖
+
+```bash
+model StockMovement {
+  id        String   @id @default(cuid())
+  productId String
+  type      String
+  quantity  Int
+  note      String?
+  createdAt DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([productId, createdAt])
+}
+```
+បន្ទាប់មក ក្នុង Product model បន្ថែម field មួយនេះ៖
+```bash
+stockMovements StockMovement[]
+```
+
+ឧទាហរណ៍ Product model របស់អ្នកនឹងមានផ្នែកទំនាក់ទំនងបែបនេះ៖
+```bash
+model Product {
+  id             String          @id @default(cuid())
+  name           String
+  price          Float
+  category       String
+  stock          Int             @default(100)
+  imageId        String?          @unique
+  image          ProductImage?    @relation(fields: [imageId], references: [id])
+  createdAt      DateTime         @default(now())
+
+  stockMovements StockMovement[]
+}
+```
+
+កុំលុប field ដែលមានស្រាប់ក្នុង Product របស់អ្នក គ្រាន់តែបន្ថែម stockMovements ប៉ុណ្ណោះ។
+
+តើ Field នីមួយៗមានន័យអ្វី?
+
+Field | អត្ថន័យ
+------|-----
+productId | ID របស់ផលិតផលដែលមានចលនា Stock
+type | ប្រភេទចលនា ដូចជា IN ឬ OUT
+quantity | ចំនួនដែលបានបន្ថែម ឬដកចេញ
+note | កំណត់សម្គាល់ ស្រេចចិត្ត
+createdAt| កាលបរិច្ឆេទ និងម៉ោង
+@@index | ជួយស្វែងរកប្រវត្តិតាមផលិតផល និងកាលបរិច្ឆេទ
+
+
+
+យើងរក្សា quantity ជាចំនួនវិជ្ជមាន ហើយប្រើ type ដើម្បីបែងចែក៖
+
+IN — បន្ថែម Stock ចំនួន 50
+
+OUT — លក់ចេញចំនួន 2
+
+វិធីនេះងាយស្រួលអាន និងស្វែងរកប្រវត្តិជាងរក្សាចំនួនអវិជ្ជមាន។
+
+### ជំហានទី 2៖ បង្កើត Migration
+
+Save schema.prisma រួចបើក Terminal នៅក្នុង Project ហើយរត់៖
+```bash
+npx prisma migrate dev --name add_stock_movement
+```
+
+ពាក្យបញ្ជានេះបង្កើតតារាង StockMovement ក្នុង Database និងធ្វើបច្ចុប្បន្នភាព Prisma Client។
+
+បើអ្នកប្រើ Prisma Client ដែលបានបង្កើតពី Schema ថ្មីរួចហើយ វានឹងអាចប្រើ៖
+
+prisma.stockMovement.create(...)
+
+ចំណាំ៖ បើអ្នកកំពុងធ្វើការជាមួយ Neon production database កុំប្រើ migrate dev លើ production។ សម្រាប់ production ប្រើ migration ដែលបានបង្កើតរួចជាមួយ npx prisma migrate deploy។
